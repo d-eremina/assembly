@@ -22,9 +22,12 @@
 #include <semaphore.h>
 #include <random>
 #include <csignal>
+#include <string>
+#include <chrono>
+#include <ctime>
 
 // Размер "базы данных"
-const int dataSize = 1;
+const int dataSize = 3;
 // Общий массив данных (база данных), к которому обращаются читатели/писатели
 int data[dataSize];
 
@@ -72,7 +75,6 @@ void *readData(void *param) {
         // Имитация процесса чтения - получение случайного значения из массива
         int index = distIndex(gen);
         printf("Reader №%d gets value %d from data[%d]\n", num, data[index], index);
-        fflush(stdout);
 
         // Начало критической секции
         sem_wait(&mutex);
