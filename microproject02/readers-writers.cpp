@@ -23,7 +23,6 @@
 #include <random>
 #include <csignal>
 #include <string>
-#include <chrono>
 #include <ctime>
 
 // Размер "базы данных"
@@ -38,6 +37,8 @@ sem_t reading = 1;
 
 // Количество блоков итераций программы
 unsigned int iter;
+
+clock_t start;
 
 // Глобальные переменне, отвечающие за число активных писателей/читателей
 // и аналогично ожидающих писателей/читателей
@@ -74,7 +75,8 @@ void *readData(void *param) {
 
         // Имитация процесса чтения - получение случайного значения из массива
         int index = distIndex(gen);
-        printf("Reader №%d gets value %d from data[%d]\n", num, data[index], index);
+        printf("%f: Reader №%d gets value %d from data[%d]\n", (float) (clock() - start) / CLOCKS_PER_SEC, num,
+               data[index], index);
 
         // Начало критической секции
         sem_wait(&mutex);
@@ -120,7 +122,8 @@ void *writeData(void *param) {
         int index = distIndex(gen);
         int value = distValue(gen);
         data[index] = value;
-        printf("Writer №%d writes value %d to data[%d]\n", num, value, index);
+        printf("%f: Writer №%d writes value %d to data[%d]\n", (float) (clock() - start) / CLOCKS_PER_SEC, num, value,
+               index);
         fflush(stdout);
 
         // Начало критической секции
@@ -184,6 +187,7 @@ int main() {
         pthread_create(&(threadRE[i]), nullptr, readData, (void *) &i);
     }
 
+    start = clock();
     for (auto &i : threadRE) {
         pthread_join(i, nullptr);
     }
